@@ -7,3 +7,6 @@ uploads/
 # Logs
 npm-debug.log
 yarn-error.log
+
+# env file
+.env
