@@ -27,10 +27,16 @@ app.get('/', (req, res) => {
 
 // CSV parsing and inserting into PostgreSQL
 app.post('/upload', upload.single('file'), (req, res) => {
-    //After uploading the file, it will be available in req.file
-    console.log(req.file);
+    //Determine the file path
+    const filePath = path.join(__dirname, 'uploads', req.file.filename);
 
-    res.send('File uploaded successfully');
+    //Read and Parse the CSV file
+
+    //Handle each row of the CSV file
+
+    //Insert Data
+
+    //End of the CSV Processing
 });
 
 // Start the server
