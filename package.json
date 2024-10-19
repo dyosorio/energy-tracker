@@ -10,9 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "apollo-server-express": "^3.13.0",
     "csv-parser": "^3.0.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "graphql": "^16.9.0",
     "multer": "^1.4.5-lts.1",
     "pg": "^8.13.0"
   }
