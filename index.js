@@ -7,9 +7,16 @@ const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const cors = require('cors');
 
 // Initialize Express app
 const app = express();
+
+app.use(cors());
+
+app.use(express.json());
 
 // PostgreSQL connection setup
 const pool = new Pool({
@@ -22,6 +29,24 @@ const pool = new Pool({
 
 // Set up a storage location for uploaded files
 const upload = multer({ dest: 'uploads/' });
+
+// JWT 
+const JWT_SECRET = process.env.JWT_SECRET;
+
+const authenticateJWT = (req, res, next) => {
+    const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized access, token required.' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: 'Forbidden, invalid token.' });
+        }
+        req.user = user;
+        next();
+    });
+};
 
 // Define GraphQL Schema using SDL
 const typeDefs = gql`
@@ -103,7 +128,20 @@ const resolvers = {
 // Initialize Apollo Server
 const server = new ApolloServer({
     typeDefs,
-    resolvers
+    resolvers,
+    context: ({ req }) => {
+        const token = req.headers.authorization || '';
+        if (token) {
+            try {
+                const user = jwt.verify(token.split(' ')[1], JWT_SECRET);
+                return { user };
+            } catch (error) {
+                console.error('JWT verification error:', error);
+                throw new Error('Invalid token');
+            }
+        }
+        return {};
+    }
 });
 
 async function startApolloServer() {
@@ -118,8 +156,29 @@ app.get('/', (req, res) => {
     res.send('File upload service is running!');
 });
 
+app.post('/login', (req, res) => {
+    console.log(req.body) // delete later
+    const { email, username, password } = req.body;
+
+    // Test user - delete later
+    const hardcodedUser = {
+        username: 'user',            
+        email: 'user@example.com',    
+        password: 'password123',
+        id: 1,      
+    };    
+
+    // Check if either username or email matches and if password matches
+    if ((username === hardcodedUser.username || email === hardcodedUser.email) && password === hardcodedUser.password) {
+        const token = jwt.sign({ username: hardcodedUser.username, id: 1 }, JWT_SECRET, { expiresIn: '1h' });
+        return res.json({ message: 'Logged in successfully', token });
+    } else {
+        return res.status(401).json({ message: 'Invalid credentials' });
+    }    
+});
+
 // Endpoint to handle file upload and CSV parsing
-app.post('/upload', upload.single('file'), (req, res) => {
+app.post('/upload', authenticateJWT, upload.single('file'), (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
     }
@@ -140,7 +199,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
                 parseFloat(teruglevering2), 
                 parseFloat(gas)
             ];
-            console.log('Inserting row with numeric conversion:', values);  // Log converted values, delete later
+            console.log('Inserting row with numeric conversion:', values);  // converted values, delete later
 
             //SQL query to insert data into the table
             const query = `
@@ -167,6 +226,25 @@ app.post('/upload', upload.single('file'), (req, res) => {
             console.error('Error processing CSV file: ', error);
             res.status(500).send('Error processing the file.');
         });
+});
+
+app.get('/protected', (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send('Authorization header is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).send('Invalid or expired token');
+        }
+        res.json({
+            message: 'You have accessed a protected route',
+            user
+        });
+    });
 });
 
 // Start the server

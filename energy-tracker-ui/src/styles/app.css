@@ -1,0 +1,91 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Courier New', Courier, monospace;
+    background-color: black;
+    color: white;
+}
+
+input, button {
+    font-family: inherit;
+    color: white;
+    background-color: black;
+    border: 1px solid white;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 10px 0;
+}
+
+button {
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    margin: auto;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* File Upload button */
+.custom-file-upload {
+    display: inline-block;
+    padding: 12px 20px;
+    cursor: pointer;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border: 1px solid white;
+    margin-bottom: 20px;
+}
+
+.custom-file-upload input {
+    display: none; 
+}
+
+.custom-file-upload:hover {
+    background-color: #222;
+}
+
+/* File name display */
+.file-name {
+    font-size: 16px;
+    color: white;
+    background-color: #555;
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    form {
+        width: 90%;
+    }
+
+    .custom-file-upload {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+
+    .file-name {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
